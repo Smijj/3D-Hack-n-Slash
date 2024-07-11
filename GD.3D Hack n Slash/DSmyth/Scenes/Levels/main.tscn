@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://bn5agg38h78vo"]
+
+[ext_resource type="PackedScene" uid="uid://c0v54drbtvsn8" path="res://DSmyth/Scenes/CharacterScenes/player.tscn" id="1_u1eif"]
+[ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="2_u4cxg"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m5yle"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_21eyp"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ou7bi"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_643rh"]
+
+[node name="Main" type="Node"]
+
+[node name="Player" parent="." instance=ExtResource("1_u1eif")]
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25682, 5.07507)
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(20, 0, 0, 0, 1, 0, 0, 0, 20, 0, 0, 0)
+shape = SubResource("BoxShape3D_m5yle")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground/CollisionShape3D"]
+mesh = SubResource("BoxMesh_21eyp")
+skeleton = NodePath("../..")
+
+[node name="TestAttackComp" parent="." instance=ExtResource("2_u4cxg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.01476)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestAttackComp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.479417)
+shape = SubResource("SphereShape3D_ou7bi")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestAttackComp/CollisionShape3D"]
+mesh = SubResource("SphereMesh_643rh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.515337, 0.527213, -0.675628, 0, 0.788376, 0.615194, 0.856987, -0.317032, 0.40628, -10.0455, 4.53041, 6.42948)

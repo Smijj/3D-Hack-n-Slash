@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4keo2mtf84vj"]
+
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/stats_component.gd" id="1_eky5b"]
+
+[node name="StatsComponent" type="Node"]
+script = ExtResource("1_eky5b")
+MaxHealth = null
+WeightType = null

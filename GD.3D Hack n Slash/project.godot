@@ -11,5 +11,6 @@ config_version=5
 [application]
 
 config/name="GD.3D-Hack-n-Slash"
+run/main_scene="res://DSmyth/Scenes/Levels/main.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"

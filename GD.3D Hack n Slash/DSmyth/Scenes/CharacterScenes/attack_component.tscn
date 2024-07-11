@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwsod8kkdjg8p"]
+
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/attack_component.gd" id="1_woq2t"]
+
+[node name="AttackComponent" type="Area3D"]
+script = ExtResource("1_woq2t")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
