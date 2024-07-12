@@ -16,12 +16,14 @@ radius = 0.4
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1k3km"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_disxb"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b62kp"]
+radius = 0.4
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("Stats", "Damageables")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("StatsComp", "AttackComp", "DamageableComps")]
 script = ExtResource("1_aqmr1")
-Stats = NodePath("StatsComponent")
-Damageables = [NodePath("DamagableComponent")]
+StatsComp = NodePath("StatsComponent")
+AttackComp = NodePath("AttackComponent")
+DamageableComps = [NodePath("DamagableComponent")]
 
 [node name="WorldCollider" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -32,19 +34,19 @@ mesh = SubResource("CapsuleMesh_grbqo")
 skeleton = NodePath("../..")
 
 [node name="StatsComponent" parent="." instance=ExtResource("2_hno1l")]
-MaxHealth = null
-WeightType = null
+MaxHealth = 100.0
+WeightType = 0
 
 [node name="AttackComponent" parent="." instance=ExtResource("4_iltov")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AttackComponent"]
 shape = SubResource("SphereShape3D_1k3km")
-disabled = true
 
 [node name="DamagableComponent" parent="." instance=ExtResource("3_plmfk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DamagableComponent"]
-shape = SubResource("BoxShape3D_disxb")
+shape = SubResource("CapsuleShape3D_b62kp")
 
 [node name="MomentumComponent" parent="." instance=ExtResource("5_j5w4r")]
 
