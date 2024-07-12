@@ -21,6 +21,8 @@ radius = 0.4
 
 [node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("StatsComp", "AttackComp", "DamageableComps")]
 script = ExtResource("1_aqmr1")
+MoveSpeed = 15.0
+JumpVelocity = 10.0
 StatsComp = NodePath("StatsComponent")
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamagableComponent")]
