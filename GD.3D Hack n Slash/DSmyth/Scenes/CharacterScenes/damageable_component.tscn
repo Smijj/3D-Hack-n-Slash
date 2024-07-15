@@ -3,4 +3,6 @@
 [ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/damageable_component.gd" id="1_u7tkk"]
 
 [node name="DamageableComponent" type="Area3D"]
+collision_layer = 16
+collision_mask = 0
 script = ExtResource("1_u7tkk")

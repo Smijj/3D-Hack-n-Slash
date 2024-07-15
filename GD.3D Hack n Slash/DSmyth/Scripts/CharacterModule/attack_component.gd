@@ -20,13 +20,14 @@ func _ready():
 func Attack(attackOwner : Node, attackType : Constants.AttackType):
 	AttackOwner = attackOwner
 	AttackType = attackType
+	
 	# Turns on attack hitbox briefly
 	Collider.disabled = false;
 	create_tween().tween_property(Collider, "disabled", true, 0.2)
+	
 	# Plays Animation
 	
 	print(attackOwner.name + " attacked")
-	
 
 
 func _on_area_entered(area):

@@ -1,12 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://c0v54drbtvsn8"]
+[gd_scene load_steps=10 format=3 uid="uid://c0v54drbtvsn8"]
 
 [ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/player.gd" id="1_aqmr1"]
 [ext_resource type="PackedScene" uid="uid://d4keo2mtf84vj" path="res://DSmyth/Scenes/CharacterScenes/stats_component.tscn" id="2_hno1l"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_plmfk"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="4_iltov"]
-[ext_resource type="PackedScene" uid="uid://duy36ct6tk2uq" path="res://DSmyth/Scenes/CharacterScenes/momentum_component.tscn" id="5_j5w4r"]
-[ext_resource type="PackedScene" uid="uid://b3f8tccllx468" path="res://DSmyth/Scenes/CharacterScenes/dash_component.tscn" id="6_n38cd"]
-[ext_resource type="PackedScene" uid="uid://5paajvx0m53t" path="res://DSmyth/Scenes/CharacterScenes/jump_component.tscn" id="7_wyob4"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xoo5c"]
 radius = 0.4
@@ -14,12 +11,15 @@ radius = 0.4
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_grbqo"]
 radius = 0.4
 
+[sub_resource type="SphereMesh" id="SphereMesh_uwies"]
+
 [sub_resource type="SphereShape3D" id="SphereShape3D_1k3km"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b62kp"]
 radius = 0.4
 
 [node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("StatsComp", "AttackComp", "DamageableComps")]
+collision_layer = 2
 script = ExtResource("1_aqmr1")
 MoveSpeed = 15.0
 JumpVelocity = 10.0
@@ -27,17 +27,29 @@ StatsComp = NodePath("StatsComponent")
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamagableComponent")]
 
-[node name="WorldCollider" type="CollisionShape3D" parent="."]
+[node name="MovementCollider" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("CapsuleShape3D_xoo5c")
 
-[node name="Mesh" type="MeshInstance3D" parent="WorldCollider"]
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = SubResource("CapsuleMesh_grbqo")
-skeleton = NodePath("../..")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Mesh"]
+transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0.991352, -0.302876)
+mesh = SubResource("SphereMesh_uwies")
+
+[node name="CameraOrigin" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.02435, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraOrigin"]
+spring_length = 3.0
+margin = 0.5
+
+[node name="Camera3D" type="Camera3D" parent="CameraOrigin/SpringArm3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.550167, 2.90464)
 
 [node name="StatsComponent" parent="." instance=ExtResource("2_hno1l")]
-MaxHealth = 100.0
-WeightType = 0
 
 [node name="AttackComponent" parent="." instance=ExtResource("4_iltov")]
 
@@ -49,9 +61,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DamagableComponent"]
 shape = SubResource("CapsuleShape3D_b62kp")
-
-[node name="MomentumComponent" parent="." instance=ExtResource("5_j5w4r")]
-
-[node name="DashComponent" parent="." instance=ExtResource("6_n38cd")]
-
-[node name="JumpComponent" parent="." instance=ExtResource("7_wyob4")]
