@@ -7,7 +7,7 @@ extends Area3D
 var AttackType : Constants.AttackType = Constants.AttackType.BASIC
 var AttackOwner : Node
 
-var Collider : CollisionShape3D 
+@export var Collider : CollisionShape3D 
 
 func _ready():
 	if !Collider:

@@ -1,11 +1,15 @@
-[gd_scene load_steps=7 format=3 uid="uid://bn5agg38h78vo"]
+[gd_scene load_steps=8 format=3 uid="uid://bn5agg38h78vo"]
 
 [ext_resource type="PackedScene" uid="uid://c0v54drbtvsn8" path="res://DSmyth/Scenes/CharacterScenes/player.tscn" id="1_u1eif"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="2_u4cxg"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_m5yle"]
-
 [sub_resource type="BoxMesh" id="BoxMesh_21eyp"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2i76t"]
+size = Vector3(20, 1, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m5yle"]
+size = Vector3(12, 4, 1)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_ou7bi"]
 
@@ -18,13 +22,22 @@
 [node name="Ground" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
 transform = Transform3D(20, 0, 0, 0, 1, 0, 0, 0, 20, 0, 0, 0)
-shape = SubResource("BoxShape3D_m5yle")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground/CollisionShape3D"]
 mesh = SubResource("BoxMesh_21eyp")
-skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_2i76t")
+
+[node name="Wall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.39707, -9.47873)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Wall"]
+transform = Transform3D(12, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_21eyp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wall"]
+shape = SubResource("BoxShape3D_m5yle")
 
 [node name="TestAttackComp" parent="." instance=ExtResource("2_u4cxg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.01476)

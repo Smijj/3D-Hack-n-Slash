@@ -1,7 +1,7 @@
 class_name Character
 extends CharacterBody3D
 
-@export_category("Settings")
+@export_category("Character Settings")
 @export var MoveSpeed = 5.0
 @export var JumpVelocity = 4.5
 # Get the Gravity from the project settings to be synced with RigidBody nodes.

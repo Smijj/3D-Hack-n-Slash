@@ -1,7 +1,8 @@
 extends Character
 # Handles Player Input, Momentum, Dashing, and Jumping
 
-@onready var CameraPivot = $CameraOrigin
+@export_category("Camera Settings")
+@onready var CameraPivot:Node3D = $CameraOrigin
 @export var Sens := 0.5
 
 #region Godot Functions & Events
