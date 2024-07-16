@@ -1,0 +1,54 @@
+[gd_scene load_steps=10 format=3 uid="uid://c5cgnswali4j7"]
+
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/enemy.gd" id="1_ikm34"]
+[ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="2_r8eay"]
+[ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_hypej"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6r1ab"]
+radius = 0.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_5pklf"]
+radius = 0.4
+
+[sub_resource type="SphereMesh" id="SphereMesh_hd4rt"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rhkha"]
+albedo_color = Color(0.615686, 0, 0.270588, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3nsnx"]
+size = Vector3(1.66504, 2.2691, 3.00732)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sta15"]
+radius = 0.4
+
+[node name="Enemy" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
+script = ExtResource("1_ikm34")
+AttackComp = NodePath("AttackComponent")
+DamageableComps = [NodePath("DamageableComponent")]
+
+[node name="MovementCollider" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_6r1ab")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("CapsuleMesh_5pklf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Mesh"]
+transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0.991352, -0.302876)
+mesh = SubResource("SphereMesh_hd4rt")
+surface_material_override/0 = SubResource("StandardMaterial3D_rhkha")
+
+[node name="AttackComponent" parent="." node_paths=PackedStringArray("Collider") instance=ExtResource("2_r8eay")]
+Collider = NodePath("CollisionShape3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27182, -1.00366)
+shape = SubResource("BoxShape3D_3nsnx")
+disabled = true
+
+[node name="DamageableComponent" parent="." instance=ExtResource("3_hypej")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DamageableComponent"]
+shape = SubResource("CapsuleShape3D_sta15")

@@ -25,10 +25,10 @@ defenceType:Constants.DefenceType = Constants.DefenceType.SOFT):
 
 
 static func DebugAttackData(attackData:AttackData):
-	print("\nATTACKDATA:
+	print("ATTACKDATA:
 	AttackOwner: %s
 	Damage: %s
 	Knockback: %s
 	AttackType: %s
 	DefenceType: %s" 
-	% [str(attackData.AttackOwner), str(attackData.Damage), str(attackData.Knockback), str(attackData.AttackType), str(attackData.DefenceType)])
+	% [str(attackData.AttackOwner.name), str(attackData.Damage), str(attackData.Knockback), str(attackData.AttackType), str(attackData.DefenceType)])

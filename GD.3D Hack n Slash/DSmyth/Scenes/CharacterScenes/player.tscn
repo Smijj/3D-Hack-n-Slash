@@ -1,7 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://c0v54drbtvsn8"]
+[gd_scene load_steps=9 format=3 uid="uid://c0v54drbtvsn8"]
 
 [ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/player.gd" id="1_aqmr1"]
-[ext_resource type="PackedScene" uid="uid://d4keo2mtf84vj" path="res://DSmyth/Scenes/CharacterScenes/stats_component.tscn" id="2_hno1l"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_plmfk"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="4_iltov"]
 
@@ -19,13 +18,12 @@ size = Vector3(1.96875, 2.30784, 3.5625)
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b62kp"]
 radius = 0.4
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("StatsComp", "AttackComp", "DamageableComps")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
 collision_layer = 2
 script = ExtResource("1_aqmr1")
 Sens = 0.2
 MoveSpeed = 15.0
 JumpVelocity = 10.0
-StatsComp = NodePath("StatsComponent")
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamagableComponent")]
 
@@ -50,8 +48,6 @@ margin = 0.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraOrigin/SpringArm3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.550167, 2.90464)
-
-[node name="StatsComponent" parent="." instance=ExtResource("2_hno1l")]
 
 [node name="AttackComponent" parent="." node_paths=PackedStringArray("Collider") instance=ExtResource("4_iltov")]
 Collider = NodePath("CollisionShape3D")

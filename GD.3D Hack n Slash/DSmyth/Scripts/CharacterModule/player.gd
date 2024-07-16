@@ -7,7 +7,8 @@ extends Character
 
 #region Godot Functions & Events
 
-func _ready():
+func _ready():	
+	Initialize()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _physics_process(delta):

@@ -7,16 +7,34 @@ extends CharacterBody3D
 # Get the Gravity from the project settings to be synced with RigidBody nodes.
 var Gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
+@export_category("Character Stats")
+@export var MaxHealth : float = 100
+@export var WeightType : Constants.WeightType = Constants.WeightType.LIGHT
+
+var CurrentHealth : float = 100
+
 @export_category("References")
-@export var StatsComp : StatsComponent
 @export var AttackComp : AttackComponent
 @export var DamageableComps : Array[DamageableComponent]
 
 
 func _ready():
-	if !StatsComp or DamageableComps.size() == 0: return
+	Initialize()
+
+func Initialize():
 	for comp in DamageableComps:
-		comp.OnDamageTaken.connect(StatsComp.TakeDamage)
+		if !comp: continue
+		comp.OnDamageTaken.connect(TakeDamage)
+
+func TakeDamage(attackData:AttackData):
+	# Checks to make sure the recieved attack isnt your own - to not hurt thineself
+	if attackData.AttackOwner == self: 
+		print("HIT> AttackOwner: "+ attackData.AttackOwner.name + ", Receiver: " + name)
+		return
+	print("RECIVE DAMAGE> AttackOwner: "+ attackData.AttackOwner.name + ", Receiver: " + name)
+	
+	AttackData.DebugAttackData(attackData)
+	pass
 
 
 func Die():
