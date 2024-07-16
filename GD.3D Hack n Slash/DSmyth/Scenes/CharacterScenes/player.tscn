@@ -21,9 +21,14 @@ radius = 0.4
 [node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
 collision_layer = 2
 script = ExtResource("1_aqmr1")
-Sens = 0.2
+_AccelerationTime = 1.5
+_DeccelerationTime = 5.0
+_AirControlMultiplier = 0.5
+_MomentumDecayRate = 10.0
+_MomentumDecayDelay = 1.5
+_DashTravelTime = 0.15
+_DashExitVelocity = 35.0
 MoveSpeed = 15.0
-JumpVelocity = 10.0
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamagableComponent")]
 
