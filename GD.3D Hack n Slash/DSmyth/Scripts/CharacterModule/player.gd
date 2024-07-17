@@ -8,13 +8,14 @@ extends Character
 @export var _AirControlMultiplier : float = 0.25 
 
 @export_group("Momentum")
-signal MomentumChanged(momentumPercentage)
+signal MomentumChanged(momentumPercentage:float, momentumMultiplier:float)
 
 @export var _MaxMomentum : float = 100
 @export var CurrentMomentum : float = 0:
 	set(value): 
 		CurrentMomentum = clampf(value, 0, _MaxMomentum)
-		MomentumChanged.emit(_MomentumPercentage)
+		MomentumChanged.emit(_MomentumPercentage, _MomentumMultiplier)
+@export var _NumberOfMomentumCharges:int = 3
 @export var _MaxMomentumMuliplier : float = 2
 @export var _MomentumDecayRate : float = 10
 @export var _MomentumDecayDelay : float = 1.5
@@ -24,7 +25,12 @@ var _IsMoving := false
 var _MomentumPercentage : float = 0:
 	get: return CurrentMomentum/_MaxMomentum
 var _MomentumMultiplier : float = 1: 
-	get: return lerpf(1, _MaxMomentumMuliplier, _MomentumPercentage)
+	get: 
+		var weight:float = 0
+		for i:float in range(_NumberOfMomentumCharges,0,-1):		# Clamps the weight value to a step-percentage based on the number of momentum charges the player has. I.e. 3 Charges means the weight will clamped to [0.33, 0.66, & 1]
+			var stepPercentage :float = i/_NumberOfMomentumCharges
+			if _MomentumPercentage >= stepPercentage: weight = stepPercentage
+		return lerpf(1, _MaxMomentumMuliplier, weight)
 
 @export_group("Dash")
 @export var _DashCD : float = 0.5
@@ -32,6 +38,11 @@ var _MomentumMultiplier : float = 1:
 @export var _DashTravelTime : float = 0.4
 @export var _DashExitVelocity : float = 10
 var _DashingTween : Tween
+
+@export_group("Attack")
+signal AttackTypeChanged(newAttackType:Constants.AttackType)
+
+@export var _CurrentAttackType : Constants.AttackType
 
 @export_group("Camera")
 @export var _MouseSensitivity := 0.2
@@ -74,10 +85,19 @@ func _input(event):
 		Dash()
 	
 	if event.is_action_pressed("Attack"):
-		if AttackComp: AttackComp.Attack(self, Constants.AttackType.BASIC)
+		if AttackComp: AttackComp.Attack(self, _CurrentAttackType)
 		
+	if event.is_action_pressed("Empower0"):
+		if _CurrentAttackType == Constants.AttackType.BASIC:
+			_CurrentAttackType = Constants.AttackType.PIERCING
+		else: _CurrentAttackType = Constants.AttackType.BASIC
+		AttackTypeChanged.emit(_CurrentAttackType)
+	
 	if event.is_action_pressed("Empower1"):
-		CurrentMomentum += 10
+		if _CurrentAttackType == Constants.AttackType.BASIC:
+			_CurrentAttackType = Constants.AttackType.BLUNT
+		else: _CurrentAttackType = Constants.AttackType.BASIC
+		AttackTypeChanged.emit(_CurrentAttackType)
 	
 
 #endregion

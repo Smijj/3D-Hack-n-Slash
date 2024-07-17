@@ -5,8 +5,7 @@ extends CharacterBody3D
 
 @export_group("Movement")
 @export var MoveSpeed : float = 15
-# Get the Gravity from the project settings to be synced with RigidBody nodes.
-var _Gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+var _Gravity = ProjectSettings.get_setting("physics/3d/default_gravity")	# Get the Gravity from the project settings to be synced with RigidBody nodes.
 
 @export_group("Stats")
 @export var MaxHealth : float = 100

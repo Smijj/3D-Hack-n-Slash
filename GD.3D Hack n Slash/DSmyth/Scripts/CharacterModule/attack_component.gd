@@ -23,9 +23,9 @@ func _ready():
 				break
 	Collider.disabled = true;
 
-func _on_area_entered(area):
+func _OnDamageableComponentHit(area):
 	if AttackOwner == null: return
-	if !area is DamageableComponent: return
+	if !area is DamageableComponent: return		# Make sure the area entered is a DmgbleComp
 	
 	var dmgComp : DamageableComponent = area
 	var newAttackData = AttackData.new(AttackOwner, Damage, Knockback, AttackType)
@@ -40,6 +40,7 @@ func Attack(attackOwner : Node, attackType : Constants.AttackType):
 	
 	# Turns on attack hitbox briefly
 	Collider.disabled = false;
+	
 	
 	if _ResetAttackTween: _ResetAttackTween.kill()
 	_ResetAttackTween = create_tween()
