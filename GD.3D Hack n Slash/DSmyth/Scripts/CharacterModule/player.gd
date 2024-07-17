@@ -3,27 +3,28 @@ extends Character
 @export_category("Player Settings")
 
 @export_group("Movement")
-@export var _AccelerationTime : float = 3
-@export var _DeccelerationTime : float = 3
+@export var _AccelerationRate : float = 6
 @export var _JumpVelocity : float = 10
 @export var _AirControlMultiplier : float = 0.25 
-var _XAccelerationTimeCounter := 0.0
-var _ZAccelerationTimeCounter := 0.0
-var _DeccelerationTimeCounter := 0.0
 
 @export_group("Momentum")
+signal MomentumChanged(momentumPercentage)
+
 @export var _MaxMomentum : float = 100
-@export var _CurrentMomentum : float = 0:
-	set(value): _CurrentMomentum = clampf(value, 0, _MaxMomentum)
+@export var CurrentMomentum : float = 0:
+	set(value): 
+		CurrentMomentum = clampf(value, 0, _MaxMomentum)
+		MomentumChanged.emit(_MomentumPercentage)
 @export var _MaxMomentumMuliplier : float = 2
-@export var _MomentumDecayRate : float = 1
-@export var _MomentumDecayDelay : float = 3
+@export var _MomentumDecayRate : float = 10
+@export var _MomentumDecayDelay : float = 1.5
+@export var _MovementMomentumGain : float = 3
 var _MomentumDecayDelayCounter : float = 0
 var _IsMoving := false
+var _MomentumPercentage : float = 0:
+	get: return CurrentMomentum/_MaxMomentum
 var _MomentumMultiplier : float = 1: 
-	get: 
-		var momentumPercent = _CurrentMomentum/_MaxMomentum
-		return lerpf(1, _MaxMomentumMuliplier, momentumPercent)
+	get: return lerpf(1, _MaxMomentumMuliplier, _MomentumPercentage)
 
 @export_group("Dash")
 @export var _DashCD : float = 0.5
@@ -49,13 +50,13 @@ func PhysicsUpdate(delta):
 
 func _process(delta):
 	if _IsMoving:
-		_CurrentMomentum += 5 * delta
+		CurrentMomentum += _MovementMomentumGain * delta
 		if _MomentumDecayDelayCounter != 0: _MomentumDecayDelayCounter = 0
 	else:
 		if _MomentumDecayDelayCounter < _MomentumDecayDelay: _MomentumDecayDelayCounter += delta
 	
-	if _CurrentMomentum > 0 and _MomentumDecayDelayCounter >= _MomentumDecayDelay:
-		_CurrentMomentum -= _MomentumDecayRate * delta
+	if CurrentMomentum > 0 and _MomentumDecayDelayCounter >= _MomentumDecayDelay:
+		CurrentMomentum -= _MomentumDecayRate * delta
 	
 
 func _input(event):
@@ -76,7 +77,7 @@ func _input(event):
 		if AttackComp: AttackComp.Attack(self, Constants.AttackType.BASIC)
 		
 	if event.is_action_pressed("Empower1"):
-		_CurrentMomentum += 10
+		CurrentMomentum += 10
 	
 
 #endregion
@@ -94,51 +95,23 @@ func _MovePlayer(newPosition):
 	position.z = newPosition.z
 
 
-var _LastXInputDir = 0
-var _LastZInputDir = 0
 func _HandleMovement(delta):
+	var maxVelocity := MoveSpeed * _MomentumMultiplier
+	var accelerationRate := _AccelerationRate
+
 	# Get the input direction and handle the movement/deceleration.
 	var inputDir := Input.get_vector("MoveLeft", "MoveRight", "MoveForward", "MoveBack")
 	var direction := (basis * Vector3(inputDir.x, 0, inputDir.y)).normalized()
-	var moveSpeed := MoveSpeed * _MomentumMultiplier
-	var accelerationTime := _AccelerationTime
-	if !is_on_floor():
-		accelerationTime /= _AirControlMultiplier
+	var moveVector := direction * maxVelocity
 	
+	if !is_on_floor():
+		accelerationRate *= _AirControlMultiplier	# Causing the player to accelerate and decelerate more slowly while in the air
+
 	if direction:
 		_IsMoving = true
-		if signi(_LastXInputDir) != signi(inputDir.x):
-			_XAccelerationTimeCounter = 0
-		if signi(_LastZInputDir) != signi(inputDir.y):
-			_ZAccelerationTimeCounter = 0
-
-		_LastXInputDir = inputDir.x
-		_LastZInputDir = inputDir.y
-		
-		_DeccelerationTimeCounter = 0
-		if absf(_XAccelerationTimeCounter) < accelerationTime: _XAccelerationTimeCounter += delta * signf(inputDir.x)
-		if absf(_ZAccelerationTimeCounter) < accelerationTime: _ZAccelerationTimeCounter += delta * signf(inputDir.y)
-		#velocity.x = direction.x * lerpf(velocity.x, moveSpeed, absf(_XAccelerationTimeCounter)/accelerationTime)
-		velocity.x = direction.x * MoveSpeed
-		print("X: "+str(velocity.x))
-		#velocity.z = lerpf(velocity.z, direction.z * moveSpeed, absf(_ZAccelerationTimeCounter)/accelerationTime)
-		velocity.z = direction.z * MoveSpeed
-		print("Z: "+str(velocity.z))
+		velocity.x = direction.x * maxVelocity
+		velocity.z = direction.z * maxVelocity
 	else:
 		_IsMoving = false
-		_XAccelerationTimeCounter = 0
-		_ZAccelerationTimeCounter = 0
-		if _DeccelerationTimeCounter < accelerationTime: _DeccelerationTimeCounter += delta
-		
-		velocity.x = move_toward(velocity.x, 0, moveSpeed)
-		velocity.z = move_toward(velocity.z, 0, moveSpeed)
-		
-		#if is_on_floor():
-			#_SlowDownHorizontalVelocity(_DeccelerationTimeCounter/_DeccelerationTime)
-		#else:
-			#_SlowDownHorizontalVelocity(_DeccelerationTimeCounter/(_DeccelerationTime*2))
-
-func _SlowDownHorizontalVelocity(weight:float):
-	velocity.x = lerpf(velocity.x, 0, weight)
-	velocity.z = lerpf(velocity.z, 0, weight)
-	
+		velocity.x = move_toward(velocity.x, 0, accelerationRate)
+		velocity.z = move_toward(velocity.z, 0, accelerationRate)

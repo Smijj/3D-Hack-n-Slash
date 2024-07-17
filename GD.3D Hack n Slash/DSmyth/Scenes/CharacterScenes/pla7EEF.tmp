@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://c0v54drbtvsn8"]
+[gd_scene load_steps=9 format=3 uid="uid://c0v54drbtvsn8"]
 
 [ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/player.gd" id="1_aqmr1"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_plmfk"]
-[ext_resource type="Script" path="res://DSmyth/Scripts/ProgressBarCtrl.gd" id="4_bligo"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="4_iltov"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xoo5c"]
@@ -22,10 +21,15 @@ radius = 0.4
 [node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
 collision_layer = 2
 script = ExtResource("1_aqmr1")
-_AccelerationRate = 10.0
+_AccelerationRate = 1.0
+_AccelerationTime = 1.5
+_DeccelerationTime = 5.0
 _AirControlMultiplier = 0.5
+_MomentumDecayRate = 10.0
+_MomentumDecayDelay = 1.5
 _DashTravelTime = 0.15
 _DashExitVelocity = 35.0
+MoveSpeed = 15.0
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamagableComponent")]
 
@@ -64,40 +68,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DamagableComponent"]
 shape = SubResource("CapsuleShape3D_b62kp")
-
-[node name="PlayerUI" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="PlayerUI"]
-visible = false
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -50.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 50
-text = "Test"
-horizontal_alignment = 1
-
-[node name="ProgressBar" type="ProgressBar" parent="PlayerUI"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.25
-anchor_top = 1.0
-anchor_right = 0.75
-anchor_bottom = 1.0
-offset_top = -37.0
-offset_bottom = -7.0
-grow_horizontal = 2
-grow_vertical = 0
-script = ExtResource("4_bligo")
-
-[connection signal="MomentumChanged" from="." to="PlayerUI/ProgressBar" method="OnPercentValueChanged"]
