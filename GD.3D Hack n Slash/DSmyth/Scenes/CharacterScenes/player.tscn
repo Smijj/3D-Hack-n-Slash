@@ -1,9 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://c0v54drbtvsn8"]
+[gd_scene load_steps=12 format=3 uid="uid://c0v54drbtvsn8"]
 
-[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/player.gd" id="1_aqmr1"]
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/PlayerCtrl.gd" id="1_20lad"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_plmfk"]
-[ext_resource type="Script" path="res://DSmyth/Scripts/ProgressBarCtrl.gd" id="4_bligo"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="4_iltov"]
+[ext_resource type="Script" path="res://DSmyth/Scripts/UIModule/MomentumBarCtrl.gd" id="4_wu648"]
+[ext_resource type="Texture2D" uid="uid://vgplxcf1ixhs" path="res://DSmyth/Creative Assets/Circle.png" id="5_vc6oe"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xoo5c"]
 radius = 0.4
@@ -14,20 +15,23 @@ radius = 0.4
 [sub_resource type="SphereMesh" id="SphereMesh_uwies"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0d3c1"]
-size = Vector3(1.96875, 2.30784, 3.5625)
+size = Vector3(4, 3, 4)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b62kp"]
 radius = 0.4
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5yiiw"]
+texture = ExtResource("5_vc6oe")
+modulate_color = Color(0.941176, 1, 0.87451, 1)
+
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp")]
 collision_layer = 2
-script = ExtResource("1_aqmr1")
+script = ExtResource("1_20lad")
 _AccelerationRate = 10.0
 _AirControlMultiplier = 0.5
 _DashTravelTime = 0.15
 _DashExitVelocity = 35.0
 AttackComp = NodePath("AttackComponent")
-DamageableComps = [NodePath("DamagableComponent")]
 
 [node name="MovementCollider" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -42,7 +46,7 @@ transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0.991352, -0.3028
 mesh = SubResource("SphereMesh_uwies")
 
 [node name="CameraOrigin" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.02435, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.67138, 2, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraOrigin"]
 spring_length = 3.0
@@ -51,11 +55,18 @@ margin = 0.5
 [node name="Camera3D" type="Camera3D" parent="CameraOrigin/SpringArm3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.550167, 2.90464)
 
-[node name="AttackComponent" parent="." node_paths=PackedStringArray("Collider") instance=ExtResource("4_iltov")]
-Collider = NodePath("CollisionShape3D")
+[node name="RayCast3D" type="RayCast3D" parent="CameraOrigin"]
+visible = false
+target_position = Vector3(0, 0, -10)
+collision_mask = 17
+collide_with_areas = true
+debug_shape_custom_color = Color(1, 0, 0, 1)
+
+[node name="AttackComponent" parent="." instance=ExtResource("4_iltov")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AttackComponent"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.18557, -1.28125)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)
 shape = SubResource("BoxShape3D_0d3c1")
 disabled = true
 
@@ -98,6 +109,19 @@ offset_top = -37.0
 offset_bottom = -7.0
 grow_horizontal = 2
 grow_vertical = 0
-script = ExtResource("4_bligo")
+script = ExtResource("4_wu648")
 
-[connection signal="MomentumChanged" from="." to="PlayerUI/ProgressBar" method="OnPercentValueChanged"]
+[node name="Reticle" type="Panel" parent="PlayerUI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yiiw")
+
+[connection signal="MomentumChanged" from="." to="PlayerUI/ProgressBar" method="_OnMomentumChanged"]

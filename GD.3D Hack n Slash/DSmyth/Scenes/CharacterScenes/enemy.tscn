@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://c5cgnswali4j7"]
 
-[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/enemy.gd" id="1_ikm34"]
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/EnemyCtrl.gd" id="1_25luj"]
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="2_r8eay"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_hypej"]
 
@@ -22,7 +22,7 @@ size = Vector3(1.66504, 2.2691, 3.00732)
 radius = 0.4
 
 [node name="Enemy" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
-script = ExtResource("1_ikm34")
+script = ExtResource("1_25luj")
 AttackComp = NodePath("AttackComponent")
 DamageableComps = [NodePath("DamageableComponent")]
 
@@ -39,8 +39,7 @@ transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0.991352, -0.3028
 mesh = SubResource("SphereMesh_hd4rt")
 surface_material_override/0 = SubResource("StandardMaterial3D_rhkha")
 
-[node name="AttackComponent" parent="." node_paths=PackedStringArray("Collider") instance=ExtResource("2_r8eay")]
-Collider = NodePath("CollisionShape3D")
+[node name="AttackComponent" parent="." instance=ExtResource("2_r8eay")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AttackComponent"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27182, -1.00366)

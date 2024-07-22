@@ -40,16 +40,16 @@ var _MomentumMultiplier : float = 1:
 var _DashingTween : Tween
 
 @export_group("Attack")
-signal AttackTypeChanged(newAttackType:Constants.AttackType)
+signal AttackTypeChanged(newAttackType:CONSTS.AttackType)
 
-@export var _CurrentAttackType : Constants.AttackType
+@export var _CurrentAttackType : CONSTS.AttackType
 
 @export_group("Camera")
 @export var _MouseSensitivity := 0.2
 @onready var _CameraPivot :Node3D = $CameraOrigin
 
 
-#region Godot Functions & Events
+#region Core Functions & Events
 
 # Override Func
 func Initialize():
@@ -82,27 +82,39 @@ func _input(event):
 		_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))
 	
 	if event.is_action_pressed("Dash"):
-		Dash()
+		_Dash()
 	
 	if event.is_action_pressed("Attack"):
-		if AttackComp: AttackComp.Attack(self, _CurrentAttackType)
-		
+		if AttackComp: 
+			var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+			var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(_CameraPivot.global_position, _CameraPivot.global_position - _CameraPivot.global_transform.basis.z * 30)
+			var collision:Dictionary = space.intersect_ray(query)
+			
+			AttackComp.Attack(self, _CurrentAttackType, collision)
+		_ChangeAttackType(CONSTS.AttackType.BASIC)	# Reset attacktype to BASIC after attacking
+	
 	if event.is_action_pressed("Empower0"):
-		if _CurrentAttackType == Constants.AttackType.BASIC:
-			_CurrentAttackType = Constants.AttackType.PIERCING
-		else: _CurrentAttackType = Constants.AttackType.BASIC
-		AttackTypeChanged.emit(_CurrentAttackType)
+		# If the _CurrentAttackType was already PIERCING, toggle it back to BASIC. Otherwise set it to PIERCING.
+		if _CurrentAttackType == CONSTS.AttackType.PIERCING:
+			_ChangeAttackType(CONSTS.AttackType.BASIC)
+		else: _ChangeAttackType(CONSTS.AttackType.PIERCING)
 	
 	if event.is_action_pressed("Empower1"):
-		if _CurrentAttackType == Constants.AttackType.BASIC:
-			_CurrentAttackType = Constants.AttackType.BLUNT
-		else: _CurrentAttackType = Constants.AttackType.BASIC
-		AttackTypeChanged.emit(_CurrentAttackType)
-	
+		# If the _CurrentAttackType was already BLUNT, toggle it back to BASIC. Otherwise set it to BLUNT.
+		if _CurrentAttackType == CONSTS.AttackType.BLUNT:
+			_ChangeAttackType(CONSTS.AttackType.BASIC)
+		else: _ChangeAttackType(CONSTS.AttackType.BLUNT)
+
 
 #endregion
 
-func Dash():
+#region Private Functions
+
+func _ChangeAttackType(newAttackType:CONSTS.AttackType):
+	_CurrentAttackType = newAttackType
+	AttackTypeChanged.emit(_CurrentAttackType)
+
+func _Dash():
 	if _DashingTween: _DashingTween.kill()
 	_DashingTween = create_tween()
 	_DashingTween.tween_method(_MovePlayer, position, position + (-transform.basis.z * _DashDistance), _DashTravelTime)
@@ -135,3 +147,5 @@ func _HandleMovement(delta):
 		_IsMoving = false
 		velocity.x = move_toward(velocity.x, 0, accelerationRate)
 		velocity.z = move_toward(velocity.z, 0, accelerationRate)
+
+#endregion

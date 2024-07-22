@@ -1,8 +1,10 @@
 [gd_scene load_steps=2 format=3 uid="uid://dqvvkdcwxsjkb"]
 
-[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/damageable_component.gd" id="1_u7tkk"]
+[ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/DamageableComponent.gd" id="1_hbg2q"]
 
 [node name="DamageableComponent" type="Area3D"]
 collision_layer = 16
 collision_mask = 0
-script = ExtResource("1_u7tkk")
+script = ExtResource("1_hbg2q")
+DefenceType = null
+Crippled = null
