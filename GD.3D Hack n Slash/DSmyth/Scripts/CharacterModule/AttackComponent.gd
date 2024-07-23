@@ -4,9 +4,11 @@ extends Area3D
 @export_category("Attack Settings")
 @export var BaseDamage : float = 10
 @export var BaseKnockback : float = 10
+@export var _RaycastCollisionMask:int = 16
 
 @export_category("References")
 @export var _Collider : CollisionShape3D 
+@export var _DebugMeshInstance:MeshInstance3D
 
 # Attack Info - gets set when in the Attack function
 var _AttackType : CONSTS.AttackType = CONSTS.AttackType.BASIC
@@ -24,8 +26,12 @@ func _ready():
 		_Collider = CollisionShape3D.new()
 		add_child(_Collider)
 	
+	if !_DebugMeshInstance:
+		_DebugMeshInstance = MeshInstance3D.new()
+		_Collider.add_child(_DebugMeshInstance)
+	
 	# Make sure the attack is properly intialized
-	_ResetAttack()
+	_ResetAttackCollider()
 	
 	# Connect events
 	area_entered.connect(_OnAttackHitboxCollision)
@@ -54,59 +60,63 @@ func _OnAttackHitboxCollision(area):
 #endregion
 
 ### Turns on the AttackComponent's hitbox briefly
-func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.BASIC, cameraCollision:Dictionary = {}):
+func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.BASIC, attackTargetPos:Vector3 = -transform.basis.z):
 	if !attackOwner or !_Collider: return
 	print(attackOwner.name + " attacked")	# Debug
-	
-	var targetPos:Vector3
-	var attackRange:float = 30
-	
-	# if the camera raycast was intersecting anything when attempting to attack, use the intersect position
-	if cameraCollision: 
-		targetPos = cameraCollision["position"]
-		print("CameraRaycast HitPos: "+str(targetPos))
-	# Otherwise, make the targetPos somewhere in front of the Collider
-	else: targetPos = _Collider.global_position - _Collider.global_transform.basis.z * attackRange
-	
-	# Shoot ray from _Collider pos to wherever the Camera was looking. this is to have the attacks feel like they are coming from the player char not the camera.
-	var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(_Collider.global_position, targetPos)
-	var collision:Dictionary = space.intersect_ray(query)
-	
-	if collision:
-		print("Attack Raycast Hit Something lol")
-	
-	## BUG: This doesnt quite work
-	var attackShapeSize = Vector3(1,1,targetPos.z - _Collider.global_position.z)
-	
-	var attackShape:BoxShape3D = BoxShape3D.new()
-	attackShape.size = attackShapeSize
-	_Collider.shape = attackShape
-	_Collider.position.z = -attackShapeSize.z/2
-	_Collider.look_at(targetPos)
-	
-	# Debug mesh to visualize collisions
-	var mesh:BoxMesh = BoxMesh.new()
-	mesh.size = attackShapeSize
-	var _DebugMeshInstance:MeshInstance3D = MeshInstance3D.new()	# TODO: Export this and just updated the Mesh comp with a new shape each time dumbass
-	_DebugMeshInstance.mesh = mesh
-	_Collider.add_child(_DebugMeshInstance)
-	
 	
 	# Set Attack info
 	_AttackOwner = attackOwner
 	_AttackType = attackType
 	
+	# Make the Attack Comp look at the AttackTargetPos so that any hitboxes are aimed towards the target pos 
+	look_at(attackTargetPos)
+	
+	
+	## Raycasts
+	var rayExclusions:Array[RID]
+	if attackOwner is PhysicsBody3D:
+		rayExclusions.append(attackOwner.get_rid())		# Exclude the attack owner's physics body from being detected by the raycast
+	
+	# Shoot ray from _Collider pos to wherever the Camera was looking. this is to have the attacks feel like they are coming from the player char not the camera.
+	var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	#var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos, _RaycastCollisionMask, rayExclusions)
+	var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos)
+	query.exclude = rayExclusions
+	var collision:Dictionary = space.intersect_ray(query)
+	
+	print("Exclusions: "+str(query.exclude))
+	print("Collision: "+str(collision))
+	
+	#if collision:
+		#print("Attack Raycast Hit Something lol")
+		#print(collision)
+	
+	
+	## Colliders
+	var attackShapeSize = Vector3(1,1,global_position.distance_to(attackTargetPos))
+	var attackShape:BoxShape3D = BoxShape3D.new()
+	attackShape.size = attackShapeSize
+	_Collider.shape = attackShape
+	_Collider.position.z = -attackShapeSize.z/2
+	
+	# Debug mesh to visualize collisions
+	var mesh:BoxMesh = BoxMesh.new()
+	mesh.size = attackShapeSize
+	_DebugMeshInstance.mesh = mesh
+	
+	# Turn collider off -> on -> off to make sure any collisions that are already inside the collider get detected
 	if _ResetAttackTween: _ResetAttackTween.kill()		# Kill any ResetAttack tween that was already playing
-	_ResetAttack()										# Reset the attack in case the ResetAttackTween wasnt able to do do before being killed
+	_ResetAttackCollider()								# Reset the attack in case the ResetAttackTween wasnt able to do do before being killed
 	_Collider.disabled = false
 	_ResetAttackTween = create_tween()
-	_ResetAttackTween.tween_callback(_ResetAttack).set_delay(0.2)	# Tween that turns on attack hitbox for 0.2 seconds
+	_ResetAttackTween.tween_callback(_ResetAttackCollider).set_delay(0.05)	# Tween that turns on attack hitbox for 0.05 seconds
 	
 	# Play Animation
 	
 
-func _ResetAttack():
+func _ResetAttackCollider():
 	if !_Collider or _Collider.disabled == true: return
 	_Collider.disabled = true
+	
+	#if _DebugMeshInstance: _DebugMeshInstance.mesh = null
 

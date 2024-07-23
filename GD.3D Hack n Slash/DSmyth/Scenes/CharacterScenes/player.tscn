@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://c0v54drbtvsn8"]
+[gd_scene load_steps=13 format=3 uid="uid://c0v54drbtvsn8"]
 
 [ext_resource type="Script" path="res://DSmyth/Scripts/CharacterModule/PlayerCtrl.gd" id="1_20lad"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_plmfk"]
@@ -14,6 +14,8 @@ radius = 0.4
 
 [sub_resource type="SphereMesh" id="SphereMesh_uwies"]
 
+[sub_resource type="SphereMesh" id="SphereMesh_ip6kw"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_0d3c1"]
 size = Vector3(4, 3, 4)
 
@@ -24,13 +26,15 @@ radius = 0.4
 texture = ExtResource("5_vc6oe")
 modulate_color = Color(0.941176, 1, 0.87451, 1)
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_CameraPivot", "_CameraLookingPos", "AttackComp")]
 collision_layer = 2
 script = ExtResource("1_20lad")
 _AccelerationRate = 10.0
 _AirControlMultiplier = 0.5
 _DashTravelTime = 0.15
 _DashExitVelocity = 35.0
+_CameraPivot = NodePath("CameraOrigin")
+_CameraLookingPos = NodePath("CameraOrigin/LookDirectionSpringArm/CameraLookingPosition")
 AttackComp = NodePath("AttackComponent")
 
 [node name="MovementCollider" type="CollisionShape3D" parent="."]
@@ -46,24 +50,29 @@ transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0.991352, -0.3028
 mesh = SubResource("SphereMesh_uwies")
 
 [node name="CameraOrigin" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.67138, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraOrigin"]
 spring_length = 3.0
 margin = 0.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraOrigin/SpringArm3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.550167, 2.90464)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 3)
 
-[node name="RayCast3D" type="RayCast3D" parent="CameraOrigin"]
-visible = false
-target_position = Vector3(0, 0, -10)
+[node name="LookDirectionSpringArm" type="SpringArm3D" parent="CameraOrigin"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 collision_mask = 17
-collide_with_areas = true
-debug_shape_custom_color = Color(1, 0, 0, 1)
+spring_length = 10.0
+
+[node name="CameraLookingPosition" type="Node3D" parent="CameraOrigin/LookDirectionSpringArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="DEBUGLookingPosMesh" type="MeshInstance3D" parent="CameraOrigin/LookDirectionSpringArm/CameraLookingPosition"]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
+mesh = SubResource("SphereMesh_ip6kw")
 
 [node name="AttackComponent" parent="." instance=ExtResource("4_iltov")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AttackComponent"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)

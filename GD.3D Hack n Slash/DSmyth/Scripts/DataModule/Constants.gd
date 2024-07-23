@@ -16,7 +16,7 @@ enum DefenceType {
 	HARD
 }
 
-static var _DamageMultiplierTable:Dictionary = {
+static var DamageMultiplierTable:Dictionary = {
 	CONSTS.AttackType.BASIC : {
 		CONSTS.WeightType.LIGHT : {
 			CONSTS.DefenceType.SOFT : 1,

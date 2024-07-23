@@ -61,7 +61,7 @@ func CalculatePostMidigationDamage(weightType:CONSTS.WeightType) -> float:
 					#postMidDamage *= 2
 
 func CalculateDamageModifer(attackType:CONSTS.AttackType = 0, weightType:CONSTS.WeightType = 0, defenceType:CONSTS.DefenceType = 0) -> float:
-	return CONSTS._DamageMultiplierTable[attackType][weightType][defenceType]
+	return CONSTS.DamageMultiplierTable[attackType][weightType][defenceType]
 
 func Debug():
 	print("ATTACKDATA:

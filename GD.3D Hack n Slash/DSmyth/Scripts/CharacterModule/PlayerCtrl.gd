@@ -43,10 +43,13 @@ var _DashingTween : Tween
 signal AttackTypeChanged(newAttackType:CONSTS.AttackType)
 
 @export var _CurrentAttackType : CONSTS.AttackType
+@export var _CurrentAttackRange : float = 30
+@export var _AttackRangeSpringArm : SpringArm3D
 
 @export_group("Camera")
 @export var _MouseSensitivity := 0.2
-@onready var _CameraPivot :Node3D = $CameraOrigin
+@export var _CameraPivot :Node3D
+@export var _CameraLookingPos :Node3D
 
 
 #region Core Functions & Events
@@ -54,6 +57,11 @@ signal AttackTypeChanged(newAttackType:CONSTS.AttackType)
 # Override Func
 func Initialize():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
+	if !_CameraPivot: 
+		printerr("No Player CameraPivot node set!")
+		push_error("No Player CameraPivot node set!")
+
 
 # Override Func
 func PhysicsUpdate(delta):
@@ -77,20 +85,22 @@ func _input(event):
 	
 	# Handle Camera
 	if event is InputEventMouseMotion:
+		# Rotate whole player around the y axis to look left and right
 		rotate_y(deg_to_rad(-event.relative.x * _MouseSensitivity))
-		_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
-		_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))
+		# Rotate just the camera around the x axis to look up and down
+		if _CameraPivot:
+			_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
+			_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))	# Clamp camera up/down motion
 	
 	if event.is_action_pressed("Dash"):
 		_Dash()
 	
 	if event.is_action_pressed("Attack"):
 		if AttackComp: 
-			var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-			var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(_CameraPivot.global_position, _CameraPivot.global_position - _CameraPivot.global_transform.basis.z * 30)
-			var collision:Dictionary = space.intersect_ray(query)
-			
-			AttackComp.Attack(self, _CurrentAttackType, collision)
+			#var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+			#var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(_CameraPivot.global_position, _CameraPivot.global_position - _CameraPivot.global_transform.basis.z * 30)
+			#var collision:Dictionary = space.intersect_ray(query)
+			AttackComp.Attack(self, _CurrentAttackType, _CameraLookingPos.global_position)
 		_ChangeAttackType(CONSTS.AttackType.BASIC)	# Reset attacktype to BASIC after attacking
 	
 	if event.is_action_pressed("Empower0"):
