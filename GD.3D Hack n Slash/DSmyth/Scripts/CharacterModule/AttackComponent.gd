@@ -60,7 +60,7 @@ func _OnAttackHitboxCollision(area):
 #endregion
 
 ### Turns on the AttackComponent's hitbox briefly
-func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.BASIC, attackTargetPos:Vector3 = -transform.basis.z):
+func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.BASIC, attackTargetPos:Vector3 = -transform.basis.z, attackRangeMultiplier:float = 1):
 	if !attackOwner or !_Collider: return
 	print(attackOwner.name + " attacked")	# Debug
 	
@@ -71,38 +71,38 @@ func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.B
 	# Make the Attack Comp look at the AttackTargetPos so that any hitboxes are aimed towards the target pos 
 	look_at(attackTargetPos)
 	
-	
-	## Raycasts
-	var rayExclusions:Array[RID]
-	if attackOwner is PhysicsBody3D:
-		rayExclusions.append(attackOwner.get_rid())		# Exclude the attack owner's physics body from being detected by the raycast
-	
-	# Shoot ray from _Collider pos to wherever the Camera was looking. this is to have the attacks feel like they are coming from the player char not the camera.
-	var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	#var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos, _RaycastCollisionMask, rayExclusions)
-	var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos)
-	query.exclude = rayExclusions
-	var collision:Dictionary = space.intersect_ray(query)
-	
-	print("Exclusions: "+str(query.exclude))
-	print("Collision: "+str(collision))
-	
+	## Raycasts (Old)
+	#var rayExclusions:Array[RID]
+	#if attackOwner is PhysicsBody3D:
+		#rayExclusions.append(attackOwner.get_rid())		# Exclude the attack owner's physics body from being detected by the raycast
+	#
+	## Shoot ray from _Collider pos to wherever the Camera was looking. this is to have the attacks feel like they are coming from the player char not the camera.
+	#var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	##var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos, _RaycastCollisionMask, rayExclusions)
+	#var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(global_position, attackTargetPos)
+	#query.exclude = rayExclusions
+	#var collision:Dictionary = space.intersect_ray(query)
+	#
+	#print("Exclusions: "+str(query.exclude))
+	#print("Collision: "+str(collision))
+	#
 	#if collision:
 		#print("Attack Raycast Hit Something lol")
 		#print(collision)
 	
-	
 	## Colliders
-	var attackShapeSize = Vector3(1,1,global_position.distance_to(attackTargetPos))
 	var attackShape:BoxShape3D = BoxShape3D.new()
-	attackShape.size = attackShapeSize
+	attackShape.size = CONSTS.GetAttackShape(attackType, attackRangeMultiplier)
 	_Collider.shape = attackShape
-	_Collider.position.z = -attackShapeSize.z/2
+	_Collider.position.z = -attackShape.size.z/2
 	
 	# Debug mesh to visualize collisions
 	var mesh:BoxMesh = BoxMesh.new()
-	mesh.size = attackShapeSize
+	mesh.size = attackShape.size
 	_DebugMeshInstance.mesh = mesh
+	var mat:StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color.DARK_ORANGE
+	_DebugMeshInstance.material_override = mat
 	
 	# Turn collider off -> on -> off to make sure any collisions that are already inside the collider get detected
 	if _ResetAttackTween: _ResetAttackTween.kill()		# Kill any ResetAttack tween that was already playing

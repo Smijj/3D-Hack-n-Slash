@@ -4,7 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://dwsod8kkdjg8p" path="res://DSmyth/Scenes/CharacterScenes/attack_component.tscn" id="2_r8eay"]
 [ext_resource type="PackedScene" uid="uid://dqvvkdcwxsjkb" path="res://DSmyth/Scenes/CharacterScenes/damageable_component.tscn" id="3_hypej"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6r1ab"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_630wb"]
+resource_local_to_scene = true
 radius = 0.4
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_5pklf"]
@@ -16,9 +17,11 @@ radius = 0.4
 albedo_color = Color(0.615686, 0, 0.270588, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3nsnx"]
+resource_local_to_scene = true
 size = Vector3(1.66504, 2.2691, 3.00732)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sta15"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_530qt"]
+resource_local_to_scene = true
 radius = 0.4
 
 [node name="Enemy" type="CharacterBody3D" node_paths=PackedStringArray("AttackComp", "DamageableComps")]
@@ -28,7 +31,7 @@ DamageableComps = [NodePath("DamageableComponent")]
 
 [node name="MovementCollider" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_6r1ab")
+shape = SubResource("CapsuleShape3D_630wb")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -50,4 +53,4 @@ disabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DamageableComponent"]
-shape = SubResource("CapsuleShape3D_sta15")
+shape = SubResource("CapsuleShape3D_530qt")

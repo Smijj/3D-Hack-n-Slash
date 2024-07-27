@@ -23,45 +23,8 @@ var Crippled : bool = false
 	#DefenceType = defenceType
 
 func CalculatePostMidigationDamage(weightType:CONSTS.WeightType) -> float:
-	return BaseDamage * CalculateDamageModifer(AttackType, weightType, DefenceType)
-	
-	#if weightType == CONSTS.WeightType.LIGHT:
-		#if DefenceType == CONSTS.DefenceType.SOFT:
-			#match AttackType:
-				#CONSTS.AttackType.BASIC:
-					#postMidDamage *= 1
-				#CONSTS.AttackType.PIERCING:
-					#postMidDamage *= 2
-				#CONSTS.AttackType.BLUNT:
-					#postMidDamage *= 1
-		#elif DefenceType == CONSTS.DefenceType.HARD:
-			#match AttackType:
-				#CONSTS.AttackType.BASIC:
-					#postMidDamage *= 0.5
-				#CONSTS.AttackType.PIERCING:
-					#postMidDamage *= 0
-				#CONSTS.AttackType.BLUNT:
-					#postMidDamage *= 0
-	#elif weightType == CONSTS.WeightType.HEAVY:
-		#if DefenceType == CONSTS.DefenceType.SOFT:
-			#match AttackType:
-				#CONSTS.AttackType.BASIC:
-					#postMidDamage *= 0.5
-				#CONSTS.AttackType.PIERCING:
-					#postMidDamage *= 3
-				#CONSTS.AttackType.BLUNT:
-					#postMidDamage *= 1
-		#elif DefenceType == CONSTS.DefenceType.HARD:
-			#match AttackType:
-				#CONSTS.AttackType.BASIC:
-					#postMidDamage *= 0
-				#CONSTS.AttackType.PIERCING:
-					#postMidDamage *= 0
-				#CONSTS.AttackType.BLUNT:
-					#postMidDamage *= 2
+	return BaseDamage * CONSTS.CalculateDamageModifer(AttackType, weightType, DefenceType)
 
-func CalculateDamageModifer(attackType:CONSTS.AttackType = 0, weightType:CONSTS.WeightType = 0, defenceType:CONSTS.DefenceType = 0) -> float:
-	return CONSTS.DamageMultiplierTable[attackType][weightType][defenceType]
 
 func Debug():
 	print("ATTACKDATA:
