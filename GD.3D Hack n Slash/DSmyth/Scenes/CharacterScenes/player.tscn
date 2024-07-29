@@ -26,7 +26,7 @@ radius = 0.4
 texture = ExtResource("5_vc6oe")
 modulate_color = Color(0.941176, 1, 0.87451, 1)
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_CameraPivot", "_CameraLookingPos", "AttackComp")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_CameraPivot", "_CameraLookingPos", "AttackComp", "DamageableComps")]
 collision_layer = 2
 script = ExtResource("1_20lad")
 _AccelerationRate = 10.0
@@ -36,6 +36,7 @@ _DashExitVelocity = 35.0
 _CameraPivot = NodePath("CameraOrigin")
 _CameraLookingPos = NodePath("CameraOrigin/LookDirectionSpringArm/CameraLookingPosition")
 AttackComp = NodePath("AttackComponent")
+DamageableComps = [NodePath("DamagableComponent")]
 
 [node name="MovementCollider" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

@@ -16,9 +16,9 @@ enum DefenceType {
 	HARD
 }
 
-static func GetAttackShape(attackType:AttackType, rangeMultiplier:float) -> Vector3:
-	var attackShape:Vector3 = _AttackShape[attackType]
-	attackShape.z *= rangeMultiplier
+static func GetAttackShapeSize(attackType:AttackType, rangeMultiplier:float) -> Vector3:
+	var attackShape:Vector3 = _AttackShape[attackType] * rangeMultiplier
+	#attackShape.z *= rangeMultiplier
 	return attackShape
 
 static var _AttackShape:Dictionary = {

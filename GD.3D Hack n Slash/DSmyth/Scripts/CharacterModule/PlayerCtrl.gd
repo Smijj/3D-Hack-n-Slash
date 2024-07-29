@@ -27,9 +27,11 @@ var _MomentumPercentage : float = 0:
 var _MomentumMultiplier : float = 1: 
 	get: 
 		var weight:float = 0
-		for i:float in range(_NumberOfMomentumCharges,0,-1):		# Clamps the weight value to a step-percentage based on the number of momentum charges the player has. I.e. 3 Charges means the weight will clamped to [0.33, 0.66, & 1]
-			var stepPercentage :float = i/_NumberOfMomentumCharges
-			if _MomentumPercentage >= stepPercentage: weight = stepPercentage
+		for i:int in range(_NumberOfMomentumCharges,0,-1):		# Clamps the weight value to a step-percentage based on the number of momentum charges the player has. I.e. 3 Charges means the weight will clamped to [0.33, 0.66, & 1]
+			var stepPercentage :float = i/float(_NumberOfMomentumCharges)
+			if _MomentumPercentage >= stepPercentage:
+				weight = stepPercentage
+				break
 		return lerpf(1, _MaxMomentumMuliplier, weight)
 
 @export_group("Dash")
@@ -41,10 +43,10 @@ var _DashingTween : Tween
 
 @export_group("Attack")
 signal AttackTypeChanged(newAttackType:CONSTS.AttackType)
-
+@export var _AttackCooldown: float = 0.4
+@export var _AttackHitMomentumGain: float = 2
 @export var _CurrentAttackType : CONSTS.AttackType
-@export var _CurrentAttackRange : float = 30
-@export var _AttackRangeSpringArm : SpringArm3D
+var _AttackCooldownCounter: float = 0
 
 @export_group("Camera")
 @export var _MouseSensitivity := 0.2
@@ -61,6 +63,12 @@ func Initialize():
 	if !_CameraPivot: 
 		printerr("No Player CameraPivot node set!")
 		push_error("No Player CameraPivot node set!")
+	
+	if AttackComp: AttackComp.AttackHit.connect(_OnAttackHit)
+	else: 
+		printerr("No Player _AttackComp node set!")
+		push_error("No Player _AttackComp node set!")
+		
 
 
 # Override Func
@@ -68,41 +76,53 @@ func PhysicsUpdate(delta):
 	_HandleMovement(delta)
 
 func _process(delta):
+	_HandleMomentum(delta)
+	
+	# Basic attack CD
+	if _AttackCooldownCounter > 0:
+		_AttackCooldownCounter -= delta
+
+func _input(event:InputEvent):
+	# Handle Jump
+	if event.is_action_pressed("Jump") and is_on_floor():
+		velocity.y = _JumpVelocity
+	# Handle Dash
+	if event.is_action_pressed("Dash"):
+		_Dash()
+	
+	_HandleCamera(event)	# Handle Camera and player y rotation
+	
+	_HandleAttacking(event)
+
+func _OnAttackHit():
+	CurrentMomentum += _AttackHitMomentumGain
+
+#endregion
+
+
+#region Private Functions
+
+func _HandleMomentum(delta):
+	# If the player is moving increase their momentum. If they stop moving start the Momentum Decay Delay counter
 	if _IsMoving:
 		CurrentMomentum += _MovementMomentumGain * delta
 		if _MomentumDecayDelayCounter != 0: _MomentumDecayDelayCounter = 0
 	else:
 		if _MomentumDecayDelayCounter < _MomentumDecayDelay: _MomentumDecayDelayCounter += delta
 	
+	# After a delay (if the player stops moving for long enough), start decaying the players momentum
 	if CurrentMomentum > 0 and _MomentumDecayDelayCounter >= _MomentumDecayDelay:
 		CurrentMomentum -= _MomentumDecayRate * delta
-	
 
-func _input(event):
-	# Handle Jump
-	if event.is_action_pressed("Jump") and is_on_floor():
-		velocity.y = _JumpVelocity
-	
-	# Handle Camera
-	if event is InputEventMouseMotion:
-		# Rotate whole player around the y axis to look left and right
-		rotate_y(deg_to_rad(-event.relative.x * _MouseSensitivity))
-		# Rotate just the camera around the x axis to look up and down
-		if _CameraPivot:
-			_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
-			_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))	# Clamp camera up/down motion
-	
-	if event.is_action_pressed("Dash"):
-		_Dash()
-	
-	if event.is_action_pressed("Attack"):
-		if AttackComp: 
-			#var space:PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-			#var query:PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(_CameraPivot.global_position, _CameraPivot.global_position - _CameraPivot.global_transform.basis.z * 30)
-			#var collision:Dictionary = space.intersect_ray(query)
-			AttackComp.Attack(self, _CurrentAttackType, _CameraLookingPos.global_position)
+
+func _HandleAttacking(event:InputEvent):
+	# Normal attack
+	if _AttackCooldownCounter <= 0 and event.is_action_pressed("Attack"):
+		if AttackComp: AttackComp.Attack(self, _CurrentAttackType, _CameraLookingPos.global_position, _MomentumMultiplier)
 		_ChangeAttackType(CONSTS.AttackType.BASIC)	# Reset attacktype to BASIC after attacking
+		_AttackCooldownCounter = _AttackCooldown	# Set cooldown timer
 	
+	# Empower toggles
 	if event.is_action_pressed("Empower0"):
 		# If the _CurrentAttackType was already PIERCING, toggle it back to BASIC. Otherwise set it to PIERCING.
 		if _CurrentAttackType == CONSTS.AttackType.PIERCING:
@@ -115,14 +135,10 @@ func _input(event):
 			_ChangeAttackType(CONSTS.AttackType.BASIC)
 		else: _ChangeAttackType(CONSTS.AttackType.BLUNT)
 
-
-#endregion
-
-#region Private Functions
-
 func _ChangeAttackType(newAttackType:CONSTS.AttackType):
 	_CurrentAttackType = newAttackType
 	AttackTypeChanged.emit(_CurrentAttackType)
+
 
 func _Dash():
 	if _DashingTween: _DashingTween.kill()
@@ -136,6 +152,15 @@ func _MovePlayer(newPosition):
 	position.x = newPosition.x
 	position.z = newPosition.z
 
+func _HandleCamera(event:InputEvent):
+	if not event is InputEventMouseMotion: return
+	
+	# Rotate whole player around the y axis to look left and right
+	rotate_y(deg_to_rad(-event.relative.x * _MouseSensitivity))
+	# Rotate just the camera around the x axis to look up and down
+	if _CameraPivot:
+		_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
+		_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))	# Clamp camera up/down motion
 
 func _HandleMovement(delta):
 	var maxVelocity := MoveSpeed * _MomentumMultiplier
@@ -147,6 +172,7 @@ func _HandleMovement(delta):
 	var moveVector := direction * maxVelocity
 	
 	if !is_on_floor():
+		# TODO: Currently this doesnt work as the acceleration rate is only applied when slowing the player down
 		accelerationRate *= _AirControlMultiplier	# Causing the player to accelerate and decelerate more slowly while in the air
 
 	if direction:
