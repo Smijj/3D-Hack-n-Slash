@@ -10,5 +10,4 @@ func PhysicsUpdate(delta):
 
 func _input(event):
 	if event.is_action_pressed("TestEnemyAttack"):
-		print(self.name + " is atttacking")
-		AttackComp.Attack(self, Constants.AttackType.BASIC)
+		AttackComp.Attack(self, CONSTS.AttackType.BASIC)

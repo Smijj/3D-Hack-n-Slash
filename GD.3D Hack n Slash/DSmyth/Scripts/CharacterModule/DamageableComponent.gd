@@ -1,7 +1,7 @@
 class_name DamageableComponent
 extends Area3D
 
-@export var DefenceType : Constants.DefenceType = Constants.DefenceType.SOFT
+@export var DefenceType : CONSTS.DefenceType = CONSTS.DefenceType.SOFT
 @export var Crippled : bool = false
 
 signal OnDamageTaken(attackData:AttackData)

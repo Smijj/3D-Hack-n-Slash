@@ -4,14 +4,21 @@ extends CharacterBody3D
 @export_category("Character Settings")
 
 @export_group("Movement")
-@export var MoveSpeed : float = 5
-# Get the Gravity from the project settings to be synced with RigidBody nodes.
-var _Gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+@export var MoveSpeed : float = 15
+var _Gravity = ProjectSettings.get_setting("physics/3d/default_gravity")	# Get the Gravity from the project settings to be synced with RigidBody nodes.
 
 @export_group("Stats")
+signal HealthChanged(currentHealth:float, currentHealthPercentage:float)
+
 @export var MaxHealth : float = 100
-@export var WeightType : Constants.WeightType = Constants.WeightType.LIGHT
-var _CurrentHealth : float = 100
+@export var _WeightType : CONSTS.WeightType = CONSTS.WeightType.LIGHT
+var _CurrentHealth : float:
+	get: return _CurrentHealth
+	set(value): 
+		_CurrentHealth = clampf(value, 0, MaxHealth) 
+		HealthChanged.emit(_CurrentHealth, _CurrentHealthPercentage)
+var _CurrentHealthPercentage : float:
+	get: return clampf(_CurrentHealth / MaxHealth, 0, 1) 
 
 @export_group("References")
 @export var AttackComp : AttackComponent
@@ -21,6 +28,8 @@ var _CurrentHealth : float = 100
 #region Core + Events
 
 func _ready():
+	_CurrentHealth = MaxHealth
+	
 	for comp in DamageableComps:
 		if !comp: continue
 		comp.OnDamageTaken.connect(TakeDamage)
@@ -47,13 +56,15 @@ func PhysicsUpdate(delta):
 
 func TakeDamage(attackData:AttackData):
 	# Checks to make sure the recieved attack isnt your own - to not hurt thineself
-	if attackData.AttackOwner == self: 
-		print("HIT> AttackOwner: "+ attackData.AttackOwner.name + ", Receiver: " + name)
-		return
-	print("RECIVE DAMAGE> AttackOwner: "+ attackData.AttackOwner.name + ", Receiver: " + name)
+	if attackData.AttackOwner == self: return
 	
-	AttackData.DebugAttackData(attackData)
-	pass
+	var postMidigationDamage = attackData.CalculatePostMidigationDamage(_WeightType)
+	_CurrentHealth -= postMidigationDamage
+	
+	print("RECEIVED DAMAGE> AttackOwner: "+ attackData.AttackOwner.name + ", Receiver: " + name + ", Amount: " + str(postMidigationDamage) + ", CurrentHealth: " + str(_CurrentHealth))
+	attackData.Debug()
+	
+	if _CurrentHealth <= 0: Die()
 
 
 func Die():

@@ -75,3 +75,7 @@ TestEnemyAttack={
 3d_physics/layer_1="Default"
 3d_physics/layer_2="Player"
 3d_physics/layer_5="Damageable"
+
+[physics]
+
+3d/default_gravity=15.0
