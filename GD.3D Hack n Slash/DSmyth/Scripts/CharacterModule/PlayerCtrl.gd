@@ -40,11 +40,13 @@ var _MomentumMultiplier : float = 1:
 		return lerpf(1, _MaxMomentumMuliplier, weight)
 
 @export_group("Dash")
+@export var _DashSpeed : float = 10
 @export var _DashCD : float = 0.5
 @export var _DashDistance : float = 10
 @export var _DashTravelTime : float = 0.4
 @export var _DashExitVelocity : float = 10
 var _IsDashing : bool = false
+var _DashTargetPos:Vector3 = Vector3.ZERO
 var _DashingTween : Tween
 
 @export_group("Attack")
@@ -97,7 +99,6 @@ func _input(event:InputEvent):
 		_Dash()
 	
 	_HandleCamera(event)	# Handle Camera and player y rotation
-	
 	_HandleAttacking(event)
 
 func _OnAttackHit():
@@ -107,19 +108,6 @@ func _OnAttackHit():
 
 
 #region Private Functions
-
-func _HandleMomentum(delta):
-	# If the player is moving increase their momentum. If they stop moving start the Momentum Decay Delay counter
-	if _IsMoving:
-		CurrentMomentum += _MovementMomentumGain * delta
-		if _MomentumDecayDelayCounter != 0: _MomentumDecayDelayCounter = 0
-	else:
-		if _MomentumDecayDelayCounter < _MomentumDecayDelay: _MomentumDecayDelayCounter += delta
-	
-	# After a delay (if the player stops moving for long enough), start decaying the players momentum
-	if CurrentMomentum > 0 and _MomentumDecayDelayCounter >= _MomentumDecayDelay:
-		CurrentMomentum -= _MomentumDecayRate * delta
-
 
 func _HandleAttacking(event:InputEvent):
 	# Normal attack
@@ -147,16 +135,22 @@ func _ChangeAttackType(newAttackType:CONSTS.AttackType):
 
 
 func _Dash():
-	if _DashingTween: _DashingTween.kill()
-	_DashingTween = create_tween()
-	_DashingTween.tween_method(_MovePlayer, position, position + (-transform.basis.z * _DashDistance), _DashTravelTime)
-	_DashingTween.set_ease(Tween.EASE_OUT)
-	_DashingTween.set_trans(Tween.TRANS_EXPO)
-	_DashingTween.finished.connect(func(): velocity = -transform.basis.z * _DashExitVelocity, CONNECT_ONE_SHOT)
+	if _InputDirection.length() > 0.1:
+		_DashTargetPos = global_position + (_InputDirection * 10)
+	else:
+		_DashTargetPos = global_position + ((basis*Vector3.FORWARD) * 10)
+		
+	_IsDashing = true
+	#if _DashingTween: _DashingTween.kill()
+	#_DashingTween = create_tween()
+	#_DashingTween.tween_method(_MovePlayer, position, position + (-transform.basis.z * _DashDistance), _DashTravelTime)
+	#_DashingTween.set_ease(Tween.EASE_OUT)
+	#_DashingTween.set_trans(Tween.TRANS_EXPO)
+	#_DashingTween.finished.connect(func(): velocity = -transform.basis.z * _DashExitVelocity, CONNECT_ONE_SHOT)
 	
-func _MovePlayer(newPosition):
-	position.x = newPosition.x
-	position.z = newPosition.z
+#func _MovePlayer(newPosition):
+	#position.x = newPosition.x
+	#position.z = newPosition.z
 
 func _HandleCamera(event:InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -168,11 +162,25 @@ func _HandleCamera(event:InputEvent):
 		_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
 		_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))	# Clamp camera up/down motion
 
+func _HandleMomentum(delta):
+	# If the player is moving increase their momentum. If they stop moving start the Momentum Decay Delay counter
+	if _IsMoving:
+		CurrentMomentum += _MovementMomentumGain * delta
+		if _MomentumDecayDelayCounter != 0: _MomentumDecayDelayCounter = 0
+	else:
+		if _MomentumDecayDelayCounter < _MomentumDecayDelay: _MomentumDecayDelayCounter += delta
+	
+	# After a delay (if the player stops moving for long enough), start decaying the players momentum
+	if CurrentMomentum > 0 and _MomentumDecayDelayCounter >= _MomentumDecayDelay:
+		CurrentMomentum -= _MomentumDecayRate * delta
 
 func _HandleMovement(delta):
 	
-	var maxVelocity := MoveSpeed * _MomentumMultiplier
+	if _IsDashing:
+		global_position = global_position.move_toward(_DashTargetPos, _DashSpeed)
+		if global_position.distance_to(_DashTargetPos) < 0.2: _IsDashing = false
 	
+	var maxVelocity := MoveSpeed * _MomentumMultiplier
 	# Get the input direction 
 	var rawInputDir := Input.get_vector("MoveLeft", "MoveRight", "MoveForward", "MoveBack")
 	_InputDirection = (basis * Vector3(rawInputDir.x, 0, rawInputDir.y)).normalized()
@@ -198,7 +206,8 @@ func _HandleMovement(delta):
 	else:
 		_IsMoving = false
 		
-		if _DecelTimeCounter > 0: 
+		# Deceleration percentage. Won't decelerate while Dashing.
+		if _DecelTimeCounter > 0 and not _IsDashing: 
 			_DecelTimeCounter -= delta if is_on_floor() else delta * _AirControlMultiplier	# Decelerate more slowly in the air
 		elif _DecelTimeCounter < 0: _DecelTimeCounter = 0
 		
