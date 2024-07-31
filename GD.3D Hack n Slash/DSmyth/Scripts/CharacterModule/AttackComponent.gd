@@ -75,7 +75,7 @@ func Attack(attackOwner:Node, attackType:CONSTS.AttackType = CONSTS.AttackType.B
 	_CurrentAttackData.BaseKnockback = BaseKnockback * momentumMultiplier
 	
 	# If the target pos is within a certain range (to close), make the attack comp look straight ahead so the hitbox doesnt go out at weird angles.
-	if global_position.distance_to(attackTargetPos) < 2:
+	if global_position.distance_to(attackTargetPos) < 3:
 		rotation = Vector3.ZERO
 	else:
 		# Make the Attack Comp look at the AttackTargetPos so that any hitboxes are aimed towards the target pos 

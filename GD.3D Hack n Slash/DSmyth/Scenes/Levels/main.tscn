@@ -13,6 +13,9 @@ size = Vector3(20, 4, 1)
 [node name="Main" type="Node"]
 
 [node name="Player" parent="." instance=ExtResource("1_u1eif")]
+_AccelerationRate = 5.0
+_DecelerationTime = 0.25
+_AirControlMultiplier = 0.25
 
 [node name="Enemy" parent="." instance=ExtResource("3_oshgg")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, -7)

@@ -3,9 +3,14 @@ extends Character
 @export_category("Player Settings")
 
 @export_group("Movement")
-@export var _AccelerationRate : float = 6
-@export var _JumpVelocity : float = 10
-@export var _AirControlMultiplier : float = 0.25 
+@export var _JumpVelocity:float = 10
+@export var _AccelerationRate:float = 1
+@export var _DecelerationTime:float = 0.5
+@export var _AirControlMultiplier:float = 0.25 
+@export var _InputDirection:Vector3 = Vector3.ZERO
+var _DecelTimeCounter:float = 0
+var _WeightedMoveVector:Vector3 = Vector3.ZERO
+var _LastAccVel:Vector3 = Vector3.ZERO
 
 @export_group("Momentum")
 signal MomentumChanged(momentumPercentage:float, momentumMultiplier:float)
@@ -39,6 +44,7 @@ var _MomentumMultiplier : float = 1:
 @export var _DashDistance : float = 10
 @export var _DashTravelTime : float = 0.4
 @export var _DashExitVelocity : float = 10
+var _IsDashing : bool = false
 var _DashingTween : Tween
 
 @export_group("Attack")
@@ -162,26 +168,43 @@ func _HandleCamera(event:InputEvent):
 		_CameraPivot.rotate_x(deg_to_rad(-event.relative.y * _MouseSensitivity))
 		_CameraPivot.rotation.x = clamp(_CameraPivot.rotation.x, deg_to_rad(-90), deg_to_rad(45))	# Clamp camera up/down motion
 
+
 func _HandleMovement(delta):
-	var maxVelocity := MoveSpeed * _MomentumMultiplier
-	var accelerationRate := _AccelerationRate
-
-	# Get the input direction and handle the movement/deceleration.
-	var inputDir := Input.get_vector("MoveLeft", "MoveRight", "MoveForward", "MoveBack")
-	var direction := (basis * Vector3(inputDir.x, 0, inputDir.y)).normalized()
-	var moveVector := direction * maxVelocity
 	
-	if !is_on_floor():
-		# TODO: Currently this doesnt work as the acceleration rate is only applied when slowing the player down
-		accelerationRate *= _AirControlMultiplier	# Causing the player to accelerate and decelerate more slowly while in the air
-
-	if direction:
+	var maxVelocity := MoveSpeed * _MomentumMultiplier
+	
+	# Get the input direction 
+	var rawInputDir := Input.get_vector("MoveLeft", "MoveRight", "MoveForward", "MoveBack")
+	_InputDirection = (basis * Vector3(rawInputDir.x, 0, rawInputDir.y)).normalized()
+	var moveVector:Vector3 = _InputDirection * maxVelocity
+	
+	
+	var weightedAccRate:float = _AccelerationRate if is_on_floor() else _AccelerationRate * _AirControlMultiplier
+	# TODO: Make the player feel more weighty at higher momentum speeds by scaling the acceleration rate with the clamped inverse of the MomentumModifier 
+	#var invertedMomentumMultiplier:float = clampf(1 - (_MomentumMultiplier-1), 0.5, 1)
+	#weightedAccRate *= invertedMomentumMultiplier
+	_WeightedMoveVector = _WeightedMoveVector.move_toward(moveVector, weightedAccRate)
+	
+	if _InputDirection:
 		_IsMoving = true
-		velocity.x = direction.x * maxVelocity
-		velocity.z = direction.z * maxVelocity
+		
+		if _DecelTimeCounter < _DecelerationTime: 
+			_DecelTimeCounter += delta
+		elif _DecelTimeCounter > _DecelerationTime: _DecelTimeCounter = _DecelerationTime
+		
+		velocity.x = _WeightedMoveVector.x
+		velocity.z = _WeightedMoveVector.z
+		_LastAccVel = velocity
 	else:
 		_IsMoving = false
-		velocity.x = move_toward(velocity.x, 0, accelerationRate)
-		velocity.z = move_toward(velocity.z, 0, accelerationRate)
+		
+		if _DecelTimeCounter > 0: 
+			_DecelTimeCounter -= delta if is_on_floor() else delta * _AirControlMultiplier	# Decelerate more slowly in the air
+		elif _DecelTimeCounter < 0: _DecelTimeCounter = 0
+		
+		var invertedDecelPercent:float = 1 - (_DecelTimeCounter / _DecelerationTime)
+		velocity.x = lerpf(_LastAccVel.x, 0, invertedDecelPercent)
+		velocity.z = lerpf(_LastAccVel.z, 0, invertedDecelPercent)
+
 
 #endregion
